@@ -4,6 +4,7 @@ import datetime
 import time
 from collections import deque
 from contextlib import contextmanager
+from weakref import ref
 
 from kombu.utils.objects import cached_property
 from vine import Thenable, barrier, promise
@@ -535,7 +536,7 @@ class ResultSet(ResultBase):
     def __init__(self, results, app=None, ready_barrier=None, **kwargs):
         self._app = app
         self.results = results
-        self.on_ready = promise(args=(self,), weak=True)
+        self.on_ready = promise(args=(ref(self),))
         self._on_full = ready_barrier or barrier(results)
         if self._on_full:
             self._on_full.then(promise(self._on_ready, weak=True))
